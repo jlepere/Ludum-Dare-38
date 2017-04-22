@@ -7,7 +7,7 @@ public class Tile
 
 	public virtual bool IsSolid
 	{
-		get { return true; }
+		get { return false; }
 	}
 
 	public virtual Vector2[] TilesUVs()
@@ -25,10 +25,10 @@ public class Tile
 		meshData.useRenderDataForCol = true;
 		if (!level.GetTile(x, y).IsSolid)
 			return meshData;
-		meshData.AddVertex(new Vector3(x - (level.levelWidth / 2), y - 0.5f - (level.levelHeight / 2), 0.5f));
-		meshData.AddVertex(new Vector3(x - (level.levelWidth / 2), y + 0.5f - (level.levelHeight / 2), 0.5f));
-		meshData.AddVertex(new Vector3(x + 1 - (level.levelWidth / 2), y + 0.5f - (level.levelHeight / 2), 0.5f));
-		meshData.AddVertex(new Vector3(x + 1 - (level.levelWidth / 2), y - 0.5f - (level.levelHeight / 2), 0.5f));
+		meshData.AddVertex(new Vector3(x - (level.levelWidth / 2), y - (level.levelHeight / 2), 0));
+		meshData.AddVertex(new Vector3(x - (level.levelWidth / 2), y + 1f - (level.levelHeight / 2), 0));
+		meshData.AddVertex(new Vector3(x + 1 - (level.levelWidth / 2), y + 1f - (level.levelHeight / 2), 0));
+		meshData.AddVertex(new Vector3(x + 1 - (level.levelWidth / 2), y - (level.levelHeight / 2), 0));
 		meshData.AddQuadTriangles();
 		meshData.uvs.AddRange(TilesUVs());
 		return meshData;

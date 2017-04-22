@@ -1,30 +1,51 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
-[RequireComponent(typeof(MeshCollider))]
+[RequireComponent(typeof(PolygonCollider2D))]
 public class LevelManager : MonoBehaviour
 {
-	public string levelName;
+    [SerializeField]
+    private GameObject levelCamera;
+
+    [SerializeField]
+    private GameObject levelPlayer;
+
+    [SerializeField]
+    private float cameraMoveOffset = 5f;
+
+    public string levelName;
 	public int levelWidth, levelHeight;
+    public Vector3 playerSpawn;
 
 	private Tile[,] levelTiles;
 	private MeshFilter meshFilter;
-	private MeshCollider meshCollider;
+    private PolygonCollider2D meshCollider;
 
 	private void Awake()
 	{
 		meshFilter = gameObject.GetComponent<MeshFilter>();
-		meshCollider = gameObject.GetComponent<MeshCollider>();
-	}
+        meshCollider = gameObject.GetComponent<PolygonCollider2D>();
+        LoadLevel("Data/Levels/test");
+    }
 
-	private void Start()
-	{
-		LoadLevel("Data/Levels/test");
-	}
+    private void Update()
+    {
+        int cameraLeftWall = levelWidth / 4;
+        int cameraRightWall = -cameraLeftWall;
+        if (levelCamera.transform.position.x > cameraRightWall && levelCamera.transform.position.x > levelPlayer.transform.position.x + cameraMoveOffset)
+            levelCamera.transform.position = new Vector3(levelPlayer.transform.position.x + cameraMoveOffset, levelCamera.transform.position.y, levelCamera.transform.position.z);
+        else if (levelCamera.transform.position.x < cameraLeftWall && levelCamera.transform.position.x < levelPlayer.transform.position.x - cameraMoveOffset)
+            levelCamera.transform.position = new Vector3(levelPlayer.transform.position.x - cameraMoveOffset, levelCamera.transform.position.y, levelCamera.transform.position.z);
+        else if (levelCamera.transform.position.x <= cameraRightWall)
+            levelCamera.transform.position = new Vector3(cameraRightWall, levelCamera.transform.position.y, levelCamera.transform.position.z);
+        else if (levelCamera.transform.position.x >= cameraLeftWall)
+            levelCamera.transform.position = new Vector3(cameraLeftWall, levelCamera.transform.position.y, levelCamera.transform.position.z);
+    }
 
-	public Tile GetTile(int x, int y)
+    public Tile GetTile(int x, int y)
 	{
 		return levelTiles[x, y];
 	}
@@ -41,16 +62,21 @@ public class LevelManager : MonoBehaviour
 
 	private void SetLevelInfo(string[] dataLine)
 	{
+        playerSpawn = new Vector3(0, 0, -5);
 		string[] dataSplit = dataLine[0].Split(' ');
 		foreach (string data in dataSplit)
 		{
 			string[] readData = data.Split(':');
-			if (readData[0] == "name")
-				levelName = readData[1];
-			else if (readData[0] == "width")
-				levelWidth = Int32.Parse(readData[1]);
-			else if (readData[0] == "height")
-				levelHeight = Int32.Parse(readData[1]);
+            if (readData[0] == "name")
+                levelName = readData[1];
+            else if (readData[0] == "width")
+                levelWidth = Int32.Parse(readData[1]);
+            else if (readData[0] == "height")
+                levelHeight = Int32.Parse(readData[1]);
+            else if (readData[0] == "playerx")
+                playerSpawn.x = Int32.Parse(readData[1]);
+            else if (readData[0] == "playery")
+                playerSpawn.y = -Int32.Parse(readData[1]) / 2;
 		}
 	}
 
@@ -59,11 +85,14 @@ public class LevelManager : MonoBehaviour
 		levelTiles = new Tile[levelWidth, levelHeight];
 		for (int y = 0; y < levelHeight; y++)
 		{
-			//string[] dataSplit = dataLine[y + 1].Split(' ');
+			string[] dataSplit = dataLine[y + 1].Split(' ');
 			for (int x = 0; x < levelWidth; x++)
 			{
-				levelTiles[x, y] = new Tile();
-			}
+                if (dataSplit[x] == "0")
+                    levelTiles[x, levelHeight - y - 1] = new Tile();
+                else if (dataSplit[x] == "1")
+                    levelTiles[x, levelHeight - y - 1] = new TileFloor();
+            }
 		}
 	}
 
@@ -73,8 +102,22 @@ public class LevelManager : MonoBehaviour
 		for (int x = 0; x < levelWidth; x++)
 			for (int y = 0; y < levelHeight; y++)
 				meshData = levelTiles[x, y].TileData(this, x, y, meshData);
+        UpdateCollider(meshData);
 		RenderMesh(meshData);
 	}
+
+    private void UpdateCollider(MeshData meshData)
+    {
+        int count = 0;
+        meshCollider.pathCount = 0;
+        Vector2[] colliderPath = new Vector2[4];
+        while (count < meshData.verticesCollider.Count)
+        {
+            meshData.verticesCollider.CopyTo(count, colliderPath, 0, 4);
+            meshCollider.SetPath(meshCollider.pathCount++, colliderPath);
+            count += 4;
+        }
+    }
 
 	private void RenderMesh(MeshData meshData)
 	{
@@ -83,12 +126,5 @@ public class LevelManager : MonoBehaviour
 		meshFilter.mesh.triangles = meshData.triangles.ToArray();
 		meshFilter.mesh.uv = meshData.uvs.ToArray();
 		meshFilter.mesh.RecalculateNormals();
-
-		Mesh mesh = new Mesh();
-		meshCollider.sharedMesh = null;
-		mesh.vertices = meshData.verticesCollider.ToArray();
-		mesh.triangles = meshData.trianglesCollider.ToArray();
-		mesh.RecalculateNormals();
-		meshCollider.sharedMesh = mesh;
 	}
 }
