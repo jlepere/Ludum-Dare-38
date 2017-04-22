@@ -70,25 +70,25 @@ public class LevelManager : MonoBehaviour
 	private void UpdateMesh()
 	{
 		MeshData meshData = new MeshData();
-        for (int x = 0; x < levelWidth; x++)
-            for (int y = 0; y < levelHeight; y++)
-                meshData = levelTiles[x, y].TileData(this, x, y, meshData);
-        RenderMesh(meshData);
+		for (int x = 0; x < levelWidth; x++)
+			for (int y = 0; y < levelHeight; y++)
+				meshData = levelTiles[x, y].TileData(this, x, y, meshData);
+		RenderMesh(meshData);
 	}
 
 	private void RenderMesh(MeshData meshData)
 	{
 		meshFilter.mesh.Clear();
-        meshFilter.mesh.vertices = meshData.vertices.ToArray();
-        meshFilter.mesh.triangles = meshData.triangles.ToArray();
-        meshFilter.mesh.uv = meshData.uvs.ToArray();
-        meshFilter.mesh.RecalculateNormals();
+		meshFilter.mesh.vertices = meshData.vertices.ToArray();
+		meshFilter.mesh.triangles = meshData.triangles.ToArray();
+		meshFilter.mesh.uv = meshData.uvs.ToArray();
+		meshFilter.mesh.RecalculateNormals();
 
-        Mesh mesh = new Mesh();
-        meshCollider.sharedMesh = null;
-        mesh.vertices = meshData.verticesCollider.ToArray();
-        mesh.triangles = meshData.trianglesCollider.ToArray();
-        mesh.RecalculateNormals();
-        meshCollider.sharedMesh = mesh;
+		Mesh mesh = new Mesh();
+		meshCollider.sharedMesh = null;
+		mesh.vertices = meshData.verticesCollider.ToArray();
+		mesh.triangles = meshData.trianglesCollider.ToArray();
+		mesh.RecalculateNormals();
+		meshCollider.sharedMesh = mesh;
 	}
 }

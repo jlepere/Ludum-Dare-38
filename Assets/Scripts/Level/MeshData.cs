@@ -13,25 +13,25 @@ public class MeshData
 	public void AddQuadTriangles()
 	{
 		triangles.Add(vertices.Count - 4);
-        triangles.Add(vertices.Count - 3);
-        triangles.Add(vertices.Count - 2);
-        triangles.Add(vertices.Count - 4);
-        triangles.Add(vertices.Count - 2);
-        triangles.Add(vertices.Count - 1);
-        if (!useRenderDataForCol)
-            return;
-        trianglesCollider.Add(verticesCollider.Count - 4);
-        trianglesCollider.Add(verticesCollider.Count - 3);
-        trianglesCollider.Add(verticesCollider.Count - 2);
-        trianglesCollider.Add(verticesCollider.Count - 4);
-        trianglesCollider.Add(verticesCollider.Count - 2);
-        trianglesCollider.Add(verticesCollider.Count - 1);
+		triangles.Add(vertices.Count - 3);
+		triangles.Add(vertices.Count - 2);
+		triangles.Add(vertices.Count - 4);
+		triangles.Add(vertices.Count - 2);
+		triangles.Add(vertices.Count - 1);
+		if (!useRenderDataForCol)
+			return;
+		trianglesCollider.Add(verticesCollider.Count - 4);
+		trianglesCollider.Add(verticesCollider.Count - 3);
+		trianglesCollider.Add(verticesCollider.Count - 2);
+		trianglesCollider.Add(verticesCollider.Count - 4);
+		trianglesCollider.Add(verticesCollider.Count - 2);
+		trianglesCollider.Add(verticesCollider.Count - 1);
 	}
 
 	public void AddVertex(Vector3 vertex)
 	{
 		vertices.Add(vertex);
-        if (useRenderDataForCol)
-            verticesCollider.Add(vertex);
+		if (useRenderDataForCol)
+			verticesCollider.Add(vertex);
 	}
 }
