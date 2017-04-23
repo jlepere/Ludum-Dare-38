@@ -2,7 +2,7 @@
 
 public class Tile
 {
-	private const float textureSize = 0.5f;
+	private const float textureSize = 0.25f;
 	protected Vector2 texturePos;
 
 	public virtual bool IsSolid

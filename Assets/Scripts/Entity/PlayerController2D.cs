@@ -38,6 +38,7 @@ public class PlayerController2D : MonoBehaviour
 
     private LevelManager levelManager;
     private PlayerManager playerManager;
+    private SoundManager soundManager;
     private SpriteRenderer spriteRenderer;
     private GroundState groundState;
     private Rigidbody2D playerBody;
@@ -46,6 +47,7 @@ public class PlayerController2D : MonoBehaviour
     private bool playerIsJump = false;
     private bool playerIsBumped = false;
     private bool playerIsSwaped = false;
+    private bool playerIsDead = false;
     private int playerWallJump = 0;
     private int playerState = 0;
     private float bumpedTime = 0;
@@ -66,6 +68,7 @@ public class PlayerController2D : MonoBehaviour
 
     private void Start()
     {
+        soundManager = GameObject.Find("Sound Manager").GetComponent<SoundManager>();
         gameObject.transform.position = levelManager.playerSpawn;
     }
 
@@ -75,7 +78,7 @@ public class PlayerController2D : MonoBehaviour
         {
             if (!playerManager.IsInvincible)
             {
-                EnemyAI enemy = collision.gameObject.GetComponent<EnemyAI>();
+                Enemy enemy = collision.gameObject.GetComponent<Enemy>();
                 int newMovement = gameObject.transform.position.x > collision.gameObject.transform.position.x ? 1 : -1;
                 if (dashState == DashState.Dashing && enemy.EnemyType != playerState && !playerIsBumped)
                 {
@@ -85,15 +88,21 @@ public class PlayerController2D : MonoBehaviour
                         playerState = 0;
                     collision.gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(20 * -newMovement, 10);
                     spriteRenderer.sprite = playerSprite[playerState];
-                    enemy.RemoveOneLife();
                     playerManager.AddOneLife();
+                    enemy.RemoveOneLife();
+                    GameManager.AddScore(20);
                 }
                 else if (!playerIsBumped)
                 {
-                    enemy.ChangeType();
+                    enemy.SwapType();
                     playerBody.velocity = new Vector2(20 * newMovement, 10);
+                    GameManager.AddScore(-10);
                     if (!playerManager.RemoveOneLife())
+                    {
+                        playerIsDead = true;
+                        GameManager.AddScore(-50);
                         gameObject.GetComponent<BoxCollider2D>().enabled = false;
+                    }
                 }
                 playerIsBumped = true;
             }
@@ -102,7 +111,10 @@ public class PlayerController2D : MonoBehaviour
 
     private void Update()
     {
-        
+        if (playerIsDead && gameObject.transform.position.y > -20)
+            return;
+        else if (playerIsDead && gameObject.transform.position.y <= -20)
+            GameManager.GameOver();
         if (playerIsBumped && bumpedTime < maxBumpedTime)
             bumpedTime += Time.deltaTime * 3f;
         if (playerIsSwaped && swapTime < maxSwapTime)
@@ -124,6 +136,7 @@ public class PlayerController2D : MonoBehaviour
                 if (Input.GetButtonDown("Dash") && playerMovement.x != 0)
                 {
                     playerBody.velocity = new Vector2(playerMovement.normalized.x * 30, 15);
+                    soundManager.PlayPlayerDash();
                     dashState = DashState.Dashing;
                 }
                 break;

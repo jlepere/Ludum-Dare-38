@@ -43,7 +43,7 @@ public class PlayerManager : MonoBehaviour
         isInvincible = true;
         RawImage test = lifeObject[playerLife].GetComponent<RawImage>();
         test.color = new Color(176f / 255f, 39f / 255f, 39f / 255f);
-        test.uvRect = new Rect(0, -0.5f, 0.5f, 0.5f);
+        test.uvRect = new Rect(0, -0.25f, 0.25f, 0.25f);
         if (playerLife <= 0)
             return false;
         return true;
@@ -56,6 +56,6 @@ public class PlayerManager : MonoBehaviour
         playerLife++;
         RawImage test = lifeObject[playerLife - 1].GetComponent<RawImage>();
         test.color = new Color(39f / 255f, 176f / 255f, 46f / 255f);
-        test.uvRect = new Rect(0.5f, -0.5f, 0.5f, 0.5f);
+        test.uvRect = new Rect(0.25f, -0.25f, 0.25f, 0.25f);
     }
 }

@@ -2,6 +2,13 @@
 
 public class EnemyAI : MonoBehaviour
 {
+    /*
+     * 
+     * USELESS -> better code in Enemy, EnemyController2D & EnemyTracker
+     * 
+     * */
+
+
     [SerializeField]
     private Sprite[] enemySprites;
 
@@ -21,6 +28,12 @@ public class EnemyAI : MonoBehaviour
     private float maxTrackingSpeed = 15f;
 
     [SerializeField]
+    private float maxJumpTime = 2f;
+
+    [SerializeField]
+    private float maxJumpSpeed = 15f;
+
+    [SerializeField]
     private float waitingTime = 2f;
 
     [SerializeField]
@@ -36,6 +49,8 @@ public class EnemyAI : MonoBehaviour
     private Vector2 enemyMovement;
     private float waitSince = 0f;
     private float destroyTime = 0f;
+    private float jumpTime = 0f;
+    private bool haveJump = true;
     private int enemyLife;
 
     private void Awake()
@@ -50,7 +65,7 @@ public class EnemyAI : MonoBehaviour
 
     private void Update()
     {
-        if (enemyState == EnemyState.Destroyed)
+        if (enemyState == EnemyState.Destroyed || enemyState == EnemyState.Idle)
             return;
         switch (enemyState)
         {
@@ -65,7 +80,24 @@ public class EnemyAI : MonoBehaviour
             destroyTime += Time.deltaTime * 3f;
         else if (enemyLife <= 0 && destroyTime >= maxDestroyTime)
             gameObject.SetActive(false);
+        if (!haveJump && jumpTime < maxJumpTime)
+            jumpTime += Time.deltaTime * 2f;
+        else if (!haveJump && jumpTime >= maxJumpTime)
+        {
+            haveJump = true;
+            jumpTime = 0;
+        }
         Debug.DrawLine(enemyBody.transform.position, enemyBody.transform.position + new Vector3(enemyBody.velocity.x, enemyBody.velocity.y, 0), Color.red);
+    }
+
+    public float SetOffset
+    {
+        set { movementOffset = value; }
+    }
+
+    public void RunEnemy()
+    {
+        enemyState = EnemyState.Walking;
     }
 
     public int EnemyType
@@ -115,9 +147,22 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.name == "Level Behaviour" && enemyState == EnemyState.Walking)
+        {
+            ContactPoint2D contact = collision.contacts[0];
+            if (Vector2.Dot(contact.normal, Vector2.left) > 0.5f)
+            {
+                enemyBody.velocity = new Vector2(0, maxJumpSpeed);
+                enemyBody.velocity = new Vector2(20f * enemyMovement.x, enemyBody.velocity.y);
+            }
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.name == "Player Behaviour")
+        if (collision.gameObject.name == "Player Behaviour" && enemyState != EnemyState.Idle)
         {
             
             int newMovement = gameObject.transform.position.x < collision.gameObject.transform.position.x ? 1 : -1;
@@ -133,23 +178,38 @@ public class EnemyAI : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.gameObject.name == "Player Behaviour")
+        if (collision.gameObject.name == "Player Behaviour" && enemyState != EnemyState.Idle)
             enemyState = EnemyState.Walking;
     }
 
     private void FixedUpdate()
     {
-        if (enemyState == EnemyState.Destroyed)
+        if (enemyState == EnemyState.Destroyed || enemyState == EnemyState.Idle)
             return;
         enemyBody.AddForce(enemyMovement * groundSpeed);
         if (enemyState == EnemyState.Tracking)
+        {
             enemyBody.velocity = Vector3.ClampMagnitude(enemyBody.velocity, maxTrackingSpeed);
+            if (haveJump)
+            {
+                haveJump = false;
+                Debug.Log(enemyBody.velocity.x + " " + enemyMovement.x);
+                if (enemyBody.velocity.x == 0)
+                {
+                    enemyBody.velocity = new Vector2(0, maxJumpSpeed);
+                    enemyBody.velocity = new Vector2(20f * enemyMovement.x, enemyBody.velocity.y);
+                }
+                else
+                    enemyBody.velocity = new Vector2(enemyBody.velocity.x, maxJumpSpeed);
+            }
+        }
         else
             enemyBody.velocity = Vector3.ClampMagnitude(enemyBody.velocity, maxGroundSpeed);
     }
 
     private enum EnemyState
     {
+        Idle,
         Walking,
         Tracking,
         Waiting,

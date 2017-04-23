@@ -1,11 +1,12 @@
 fileFormatVersion: 2
 guid: 7fd09ac4e4d7a674db531cc441529c89
-timeCreated: 1492896072
+timeCreated: 1492984558
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
     21300000: Entity_0
     21300002: Entity_1
+    21300004: Point
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -76,7 +77,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 24
+        y: 72
         width: 24
         height: 24
       alignment: 0
@@ -89,9 +90,22 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 24
-        y: 24
+        y: 72
         width: 24
         height: 24
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Point
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 79
+        width: 8
+        height: 10
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
