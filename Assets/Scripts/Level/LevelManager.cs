@@ -23,6 +23,7 @@ public class LevelManager : MonoBehaviour
 	private Tile[,] levelTiles;
 	private MeshFilter meshFilter;
     private PolygonCollider2D meshCollider;
+    private List<Vector2> levelHitbox;
 
 	private void Awake()
 	{
@@ -52,15 +53,17 @@ public class LevelManager : MonoBehaviour
 
 	private void LoadLevel(string levelData)
 	{
+        int levelDataIndex = 0;
 		string[] parseLevelDataLine = new string[] { "\r\n", "\r", "\n" };
 		TextAsset data = Resources.Load(levelData) as TextAsset;
 		string[] dataLine = data.text.Split(parseLevelDataLine, StringSplitOptions.None);
-		SetLevelInfo(dataLine);
-		SetLevelData(dataLine);
+		levelDataIndex = SetLevelInfo(dataLine);
+        levelDataIndex = SetLevelHitbox(dataLine, levelDataIndex);
+		SetLevelData(dataLine, levelDataIndex);
 		UpdateMesh();
 	}
 
-	private void SetLevelInfo(string[] dataLine)
+	private int SetLevelInfo(string[] dataLine)
 	{
         playerSpawn = new Vector3(0, 0, -5);
 		string[] dataSplit = dataLine[0].Split(' ');
@@ -78,14 +81,31 @@ public class LevelManager : MonoBehaviour
             else if (readData[0] == "playery")
                 playerSpawn.y = -Int32.Parse(readData[1]) / 2;
 		}
+        return 1;
 	}
 
-	private void SetLevelData(string[] dataLine)
+    private int SetLevelHitbox(string[] dataLine, int levelDataIndex)
+    {
+        levelHitbox = new List<Vector2>();
+        string[] dataSplit = dataLine[levelDataIndex].Split(' ');
+        foreach (string dataSplited in dataSplit)
+        {
+            string[] hitboxPosition = dataSplited.Split(';');
+            foreach (string data in hitboxPosition)
+            {
+                string[] readData = data.Split(':');
+                levelHitbox.Add(new Vector2(Int32.Parse(readData[0]) - (levelWidth / 2), -(Int32.Parse(readData[1]) - (levelHeight / 2) - 1)));
+            }
+        }
+        return ++levelDataIndex;
+    }
+
+	private void SetLevelData(string[] dataLine, int levelDataIndex)
 	{
 		levelTiles = new Tile[levelWidth, levelHeight];
 		for (int y = 0; y < levelHeight; y++)
 		{
-			string[] dataSplit = dataLine[y + 1].Split(' ');
+			string[] dataSplit = dataLine[y + levelDataIndex].Split(' ');
 			for (int x = 0; x < levelWidth; x++)
 			{
                 if (dataSplit[x] == "0")
@@ -111,9 +131,9 @@ public class LevelManager : MonoBehaviour
         int count = 0;
         meshCollider.pathCount = 0;
         Vector2[] colliderPath = new Vector2[4];
-        while (count < meshData.verticesCollider.Count)
+        while (count < levelHitbox.Count)
         {
-            meshData.verticesCollider.CopyTo(count, colliderPath, 0, 4);
+            levelHitbox.CopyTo(count, colliderPath, 0, 4);
             meshCollider.SetPath(meshCollider.pathCount++, colliderPath);
             count += 4;
         }

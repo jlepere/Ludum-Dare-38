@@ -22,7 +22,6 @@ public class Tile
 
 	public virtual MeshData TileData(LevelManager level, int x, int y, MeshData meshData)
 	{
-		meshData.useRenderDataForCol = true;
 		if (!level.GetTile(x, y).IsSolid)
 			return meshData;
 		meshData.AddVertex(new Vector3(x - (level.levelWidth / 2), y - (level.levelHeight / 2), 0));
